@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const userRouter = require('./routers/userRouter');
+const seedRouter = require('./routers/seedRouter');
 const app = express();
 
 const rateLimiter = rateLimit({
@@ -21,8 +22,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(morgan('dev'));
-app.use(rateLimiter); // rate limiter
+// rate limiter
+app.use(rateLimiter);
+
+
 app.use('/api/users', userRouter); //user router
+
+// seed router
+app.use('/api/seed', seedRouter);
 
 
 
