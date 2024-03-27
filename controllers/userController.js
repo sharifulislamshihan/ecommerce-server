@@ -1,6 +1,7 @@
 const createError = require('http-errors');
 const User = require('../models/userModel');
 const { successResponse } = require('./responseController');
+const { default: mongoose } = require('mongoose');
 
 
 
@@ -55,4 +56,40 @@ const getUsers = async (req, res, next) => {
     }
 }
 
-module.exports = getUsers;
+
+
+const getUser = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        // do not want to return  the password in response
+        const options = {
+            password: 0
+        }
+        //  find user by id
+        const user = await User.findById(id, options);
+
+        if(!user){
+            throw createError(404, 'User Not Found')
+        }
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Users Returned Successfully",
+            payload: {
+                user
+            }
+        })
+    }
+    catch (error) {
+        if(error instanceof mongoose.Error) {
+            next(createError(400, "Invalid User"));
+            return;
+        }
+        next(error);
+    }
+}
+
+
+module.exports = {
+    getUsers,
+    getUser,
+};
