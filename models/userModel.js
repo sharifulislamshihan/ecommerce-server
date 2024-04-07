@@ -1,5 +1,5 @@
 const { Schema, model } = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const { defaultImagePath } = require('../secret');
 
 const userSchema = new Schema({
@@ -8,7 +8,7 @@ const userSchema = new Schema({
         required: [true, 'Please provide your name'],
         trim: true,
         minlength: [3, 'minimum  length is 3 characters'],
-        maxlength: [20, 'maximum length is 20 characters']
+        maxlength: [40, 'maximum length is 40 characters']
     },
     email: {
         type: String,
