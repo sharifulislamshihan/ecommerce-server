@@ -2,12 +2,14 @@ const createError = require('http-errors');
 const User = require('../models/userModel');
 const { successResponse } = require('./responseController');
 const { findWithId } = require('../Services/findWithId');
+const { createJsonWebToken } = require('../helper/jsonwebtoken');
+const { jwtActivationKey } = require('../secret');
 // const { default: mongoose } = require('mongoose');
 
 
 
 
-
+// get all the user
 const getUsers = async (req, res, next) => {
     try {
         const search = req.query.search || "";
@@ -107,9 +109,50 @@ const deleteUserById = async (req, res, next) => {
     }
 }
 
+// process  registration request
+const processRegister = async (req, res, next) => {
+    try {
+        const { name, email, password, phone, address } = req.body;
+
+        // check if the user already exists in the database
+        const userExists = await User.exists({
+            email: email
+        });
+
+        if(userExists){
+            throw createError(409, 'User with this  Email already Exists. Please sign in');
+        }
+
+        // jwt
+        const token = createJsonWebToken({name,email,password,phone,address}, jwtActivationKey, '3h' )
+
+        //console.log(token);
+        // const newUser = {
+        //     name,
+        //     email,
+        //     password,
+        //     phone,
+        //     address
+        // }
+
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Users Created Successfully",
+            payload: {
+                token
+            }
+        })
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
 
 module.exports = {
     getUsers,
     getUserById,
     deleteUserById,
+    processRegister,
 };
