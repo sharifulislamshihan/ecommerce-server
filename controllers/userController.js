@@ -128,7 +128,7 @@ const deleteUserById = async (req, res, next) => {
 const processRegister = async (req, res, next) => {
     try {
         const { name, email, password, image, phone, address } = req.body;
-
+        //todo: 'add image and store image form imgbb';
         // check if the user already exists in the database
         const userExists = await User.exists({
             email: email
