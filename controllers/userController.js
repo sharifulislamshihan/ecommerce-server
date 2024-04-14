@@ -1,4 +1,5 @@
 const createError = require('http-errors');
+const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const { successResponse } = require('./responseController');
@@ -95,11 +96,23 @@ const deleteUserById = async (req, res, next) => {
 
         const user = await findWithId(id, options);
 
+        const userImagePath = user.image;
+        fs.access(userImagePath, (err) =>{
+            if(err){
+                console.log("User Image does not exist...");
+            } else {
+                // file exists
+                fs.unlink(userImagePath, (err) =>{
+                    if(err) throw err;
+                    console.log('Successfully deleted User Image');
+                });
+            };
+        })
+
         const deletedUser = await User.findByIdAndDelete({
             _id: id,
             isAdmin: false,
         });
-
 
         return successResponse(res, {
             statusCode: 200,
@@ -114,7 +127,7 @@ const deleteUserById = async (req, res, next) => {
 // process  registration request
 const processRegister = async (req, res, next) => {
     try {
-        const { name, email, password, phone, address } = req.body;
+        const { name, email, password, image, phone, address } = req.body;
 
         // check if the user already exists in the database
         const userExists = await User.exists({
@@ -126,7 +139,7 @@ const processRegister = async (req, res, next) => {
         }
 
         // jwt
-        const token = createJsonWebToken({ name, email, password, phone, address }, jwtActivationKey, '10m')
+        const token = createJsonWebToken({ name, email, password, image, phone, address }, jwtActivationKey, '10m')
 
         //console.log(token);
         // const newUser = {
@@ -152,7 +165,8 @@ const processRegister = async (req, res, next) => {
 
         //  Send Email with Nodemailer
         try {
-            await sendEmailWithNodeMailer(emailData)
+            //todo: uncommnet below line 
+            //await sendEmailWithNodeMailer(emailData)
         } catch (error) {
             next(createError(500, "Failed to send verification mail"));
 

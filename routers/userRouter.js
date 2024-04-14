@@ -1,10 +1,12 @@
 const express = require('express');
 const { getUsers, getUserById, deleteUserById, processRegister, activateUserAccount } = require('../controllers/userController');
+const upload = require('../middlewares/uploadFiles');
 const userRouter = express.Router();
 
 
 // GET: api/users
 userRouter.post('/process-register', processRegister);
+// upload.single("image"),
 
 userRouter.post('/verify', activateUserAccount);
 
