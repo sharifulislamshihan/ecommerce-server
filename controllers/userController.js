@@ -116,7 +116,7 @@ const deleteUserById = async (req, res, next) => {
 
         return successResponse(res, {
             statusCode: 200,
-            message: "Users Deleted Successfully",
+            message: "User Deleted Successfully",
         })
     }
     catch (error) {
@@ -232,10 +232,75 @@ const activateUserAccount = async (req, res, next) => {
 }
 
 
+// Update a single user
+const updateUserById = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+
+        const updateOptions = {
+            // updated data should be original data
+            new: true,
+            // it helps to validate data according to schema
+            runValidators: true,
+            context: 'query',
+        }
+
+        let updates = {};
+        // name, email, password, phone, image, address
+
+        // --------------Update user data-----------------
+        if (req.body.name) {
+            updates.name = req.body.name;
+        }
+        if (req.body.email) {
+            updates.email = req.body.email;
+        }
+        if (req.body.password) {
+            updates.password = req.body.password;
+        }
+        if (req.body.phone) {
+            updates.phone = req.body.phone;
+        }
+        // todo : image will update according to imgbb link
+        if (req.body.image) {
+            updates.image = req.body.image;
+        }
+        if (req.body.address) {
+            updates.address = req.body.address;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId, 
+            updates, 
+            updateOptions
+        )
+        //remove password from response
+        .select("-password");
+
+        if (!updatedUser) {
+            throw createError(404, 'User does not exist')
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "User Updated Successfully",
+            payload: {
+                updatedUser,
+            }
+        })
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
 module.exports = {
     getUsers,
     getUserById,
     deleteUserById,
     processRegister,
     activateUserAccount,
+    updateUserById,
+
 };
