@@ -31,12 +31,15 @@ const handleLogin = async (req, res, next) => {
         }
         // token, cookie
         // jwt token
+
+        // todo: set time for login properly
         const accessToken = createJsonWebToken(
-            { email }, jwtAccessKey,
-            '10m')
+            // return specific id that is logged in
+            { _id: user._id }, jwtAccessKey,
+            '24h')
             // 10m = 10 minutes
-            res.cookie('access_token', accessToken),{
-                maxAge: 15 * 60 * 1000, // 15 min
+            res.cookie('accessToken', accessToken),{
+                maxAge: 24* 60 * 60 * 1000, // 24 h
                 httpOnly: true,
                 sameSite: 'none',
                 secure: true
