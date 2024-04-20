@@ -2,11 +2,13 @@ const express = require('express');
 require('dotenv').config()
 const morgan = require('morgan');
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const userRouter = require('./routers/userRouter');
 const seedRouter = require('./routers/seedRouter');
 const { errorResponse } = require('./controllers/responseController');
+const authRouter = require('./routers/authRouter');
 const app = express();
 
 const rateLimiter = rateLimit({
@@ -17,6 +19,7 @@ const rateLimiter = rateLimit({
 
 
 // middleware
+app.use(cookieParser());
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,12 +29,14 @@ app.use(morgan('dev'));
 // rate limiter
 app.use(rateLimiter);
 
-
+// router
 app.use('/api/users', userRouter); //user router
 
 // seed router
 app.use('/api/seed', seedRouter);
 
+// auth
+app.use('/api/auth', authRouter);
 
 
 // Routes

@@ -139,7 +139,9 @@ const processRegister = async (req, res, next) => {
         }
 
         // jwt
-        const token = createJsonWebToken({ name, email, password, image, phone, address }, jwtActivationKey, '10m')
+        const token = createJsonWebToken(
+            { name, email, password, image, phone, address }, jwtActivationKey, 
+            '10m')
 
         //console.log(token);
         // const newUser = {
@@ -176,6 +178,7 @@ const processRegister = async (req, res, next) => {
         return successResponse(res, {
             statusCode: 200,
             message: `Please go to at ${email} to completing your registration email`,
+            // todo : comment below payload line
             payload: {
                 token
             }
@@ -236,6 +239,10 @@ const activateUserAccount = async (req, res, next) => {
 const updateUserById = async (req, res, next) => {
     try {
         const userId = req.params.id;
+        const options = {password: 0};
+
+        // find user
+        const user = await findWithId(User, userId, options)
 
         const updateOptions = {
             // updated data should be original data
@@ -252,9 +259,9 @@ const updateUserById = async (req, res, next) => {
         if (req.body.name) {
             updates.name = req.body.name;
         }
-        if (req.body.email) {
-            updates.email = req.body.email;
-        }
+        // if (req.body.email) {
+        //     updates.email = req.body.email;
+        // }
         if (req.body.password) {
             updates.password = req.body.password;
         }
