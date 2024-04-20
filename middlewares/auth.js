@@ -6,13 +6,13 @@ const isLoggedIn = async (req, res, next) => {
         const accessToken = req.cookies.accessToken;
         //console.log(token);
 
-        if(!accessToken){
+        if (!accessToken) {
             throw createError(401, 'Access token not found! Login Again!')
         }
 
         const decoded = jwt.verify(accessToken, jwtAccessKey);
         console.log(decoded);
-        if(!decoded){
+        if (!decoded) {
             throw createError(401, 'Invalid Access Token! Login Again!')
         }
         req.body.userId = decoded._id;
@@ -31,10 +31,17 @@ const isLoggedOut = async (req, res, next) => {
         const accessToken = req.cookies.accessToken;
         //console.log(accessToken);
 
-        if(!accessToken){
-            throw createError(400, 'User is already logged In')
+        if (accessToken) {
+            try {
+                const decoded = jwt.verify(accessToken, jwtAccessKey);
+                if (decoded) {
+                    throw createError(400, 'User is already logged In')
+                }
+            }
+            catch (error) {
+                throw error;
+            }
         }
-
         next();
     }
     catch (error) {
