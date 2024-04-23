@@ -29,6 +29,7 @@ const handleLogin = async (req, res, next) => {
         if (user.isBanned) {
             throw createError(403, 'You are banned! Please contact with authority')
         }
+
         // token, cookie
         // jwt token
 
@@ -36,19 +37,22 @@ const handleLogin = async (req, res, next) => {
         const accessToken = createJsonWebToken(
             { user }, jwtAccessKey,
             '24h')
-            // 24h = 24 hour
-            res.cookie('accessToken', accessToken),{
-                maxAge: 24* 60 * 60 * 1000, // 24 h
-                httpOnly: true,
-                sameSite: 'none',
-                secure: true
-            }
+        // 24h = 24 hour
+        res.cookie('accessToken', accessToken), {
+            maxAge: 24 * 60 * 60 * 1000, // 24 h
+            httpOnly: true,
+            sameSite: 'none',
+            secure: true
+        }
+
+
+        const userWithOutPassword = await User.findOne({ email }).select('-password');
         // success response
         return successResponse(res, {
             statusCode: 200,
             message: 'user logged in Successfully',
             payload: {
-                
+                userWithOutPassword
             }
         })
     }

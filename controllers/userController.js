@@ -96,20 +96,20 @@ const deleteUserById = async (req, res, next) => {
             password: 0,
         }
 
-        const user = await findWithId(id, options);
+        const user = await findWithId(User, id, options);
 
-        const userImagePath = user.image;
-        fs.access(userImagePath, (err) =>{
-            if(err){
-                console.log("User Image does not exist...");
-            } else {
-                // file exists
-                fs.unlink(userImagePath, (err) =>{
-                    if(err) throw err;
-                    console.log('Successfully deleted User Image');
-                });
-            };
-        })
+        // const userImagePath = user.image;
+        // fs.access(userImagePath, (err) =>{
+        //     if(err){
+        //         console.log("User Image does not exist...");
+        //     } else {
+        //         // file exists
+        //         fs.unlink(userImagePath, (err) =>{
+        //             if(err) throw err;
+        //             console.log('Successfully deleted User Image');
+        //         });
+        //     };
+        // })
 
         const deletedUser = await User.findByIdAndDelete({
             _id: id,

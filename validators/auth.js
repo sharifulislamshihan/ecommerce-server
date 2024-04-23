@@ -49,6 +49,32 @@ const validateUserRegistration = [
 
 ]
 
+
+const validateUserLogin = [
+
+    // ----------email validation---------
+    body('email')
+        .trim()
+        .notEmpty()
+        .withMessage('Email is required. Enter Your Email')
+        .isEmail()
+        .withMessage('Invalid Email Address'),
+
+
+    // ----------password validation---------
+    body('password')
+        .trim()
+        .notEmpty()
+        .withMessage('Password is required.')
+        .isLength({ min: 6 })
+        .matches(
+            /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/
+        )
+        .withMessage('Password should contain at least 8 character, one Uppercase letter, one lowercase letter, one number and one special character'),
+
+]
+
 module.exports = {
     validateUserRegistration,
+    validateUserLogin,
 };
