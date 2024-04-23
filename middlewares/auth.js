@@ -1,6 +1,11 @@
 const createError = require('http-errors');
 const jwt = require('jsonwebtoken');
 const { jwtAccessKey } = require('../secret');
+
+
+
+
+
 const isLoggedIn = async (req, res, next) => {
     try {
         const accessToken = req.cookies.accessToken;
@@ -15,8 +20,10 @@ const isLoggedIn = async (req, res, next) => {
         if (!decoded) {
             throw createError(401, 'Invalid Access Token! Login Again!')
         }
-        req.body.userId = decoded._id;
-        //console.log(req.userId);
+        //console log will work only if we check only end point where logged in middleware used.
+        // can get user details by using req.user. Its mainly to see the role
+        req.user = decoded.user;
+        //console.log(req.user);
         next();
     }
     catch (error) {
@@ -49,7 +56,30 @@ const isLoggedOut = async (req, res, next) => {
     }
 }
 
+
+
+
+
+const isAdmin = async (req, res, next) => {
+    try {
+        //console.log(accessToken);
+        console.log(req.user.isAdmin);
+        // if its is not admin it will not give access to the next
+        if(!req.user.isAdmin){
+            throw createError(403, 'Forbidden. Admin Access Only')
+        }
+
+        // if it is admin it will give access the next endpoint
+        next();
+    }
+    catch (error) {
+        return next(error)
+    }
+}
+
+
 module.exports = {
     isLoggedIn,
     isLoggedOut,
+    isAdmin,
 }

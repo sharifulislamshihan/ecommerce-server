@@ -66,7 +66,9 @@ const getUsers = async (req, res, next) => {
 
 // get a single user
 const getUserById = async (req, res, next) => {
+    
     try {
+        // console.log(req.user);
         const id = req.params.id;
         const options = {
             password: 0,

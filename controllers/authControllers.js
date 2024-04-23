@@ -34,10 +34,9 @@ const handleLogin = async (req, res, next) => {
 
         // todo: set time for login properly
         const accessToken = createJsonWebToken(
-            // return specific id that is logged in
-            { _id: user._id }, jwtAccessKey,
+            { user }, jwtAccessKey,
             '24h')
-            // 10m = 10 minutes
+            // 24h = 24 hour
             res.cookie('accessToken', accessToken),{
                 maxAge: 24* 60 * 60 * 1000, // 24 h
                 httpOnly: true,
@@ -49,6 +48,7 @@ const handleLogin = async (req, res, next) => {
             statusCode: 200,
             message: 'user logged in Successfully',
             payload: {
+                
             }
         })
     }
@@ -60,7 +60,7 @@ const handleLogin = async (req, res, next) => {
 
 const handleLogout = async (req, res, next) => {
     try {
-        res.clearCookie('access_token')
+        res.clearCookie('accessToken')
         // success response
         return successResponse(res, {
             statusCode: 200,
