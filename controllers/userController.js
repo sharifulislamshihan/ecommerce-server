@@ -7,6 +7,7 @@ const { findWithId } = require('../Services/findWithId');
 const { createJsonWebToken } = require('../helper/jsonwebtoken');
 const { jwtActivationKey, clientUrl } = require('../secret');
 const { sendEmailWithNodeMailer } = require('../helper/email');
+const { handleUserAction } = require('../Services/userService');
 // const { default: mongoose } = require('mongoose');
 
 
@@ -304,84 +305,20 @@ const updateUserById = async (req, res, next) => {
 }
 
 
-// handle ban a single user
-const handleBanUserById = async (req, res, next) => {
+// handle ban and unbanned user by id
+const handleManageBannedUserById = async (req, res, next) => {
     try {
         const userId = req.params.id;
-        // find user
-        await findWithId(User, userId)
+        const action = req.body.action
+        console.log(action);
 
-        // to banned a user by a admin
-        const updatesBannedInformation = { isBanned : true };
-
-        const updateOptions = {
-            // updated data should be original data
-            new: true,
-            // it helps to validate data according to schema
-            runValidators: true,
-            context: 'query',
-        }
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            updatesBannedInformation,
-            updateOptions
-        )
-            //remove password from response
-            .select("-password");
-
-        if (!updatedUser) {
-            throw createError(404, 'User was not banned successfully')
-        }
-
+        // handle user action made to handle user ban unban action
+        const successMessage = await handleUserAction(userId, action)
         return successResponse(res, {
             statusCode: 200,
-            message: "User is banned successfully",
+            message: successMessage,
             payload: {
-                updatedUser,
-            }
-        })
-    }
-    catch (error) {
-        next(error);
-    }
-}
-
-
-
-// handle unBan a single user
-const handleUnBanUserById = async (req, res, next) => {
-    try {
-        const userId = req.params.id;
-        // find user
-        await findWithId(User, userId)
-
-        // to banned a user by a admin
-        const updatesBannedInformation = { isBanned : false };
-
-        const updateOptions = {
-            // updated data should be original data
-            new: true,
-            // it helps to validate data according to schema
-            runValidators: true,
-            context: 'query',
-        }
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            updatesBannedInformation,
-            updateOptions
-        )
-            //remove password from response
-            .select("-password");
-
-        if (!updatedUser) {
-            throw createError(404, 'User was not UnBanned successfully')
-        }
-
-        return successResponse(res, {
-            statusCode: 200,
-            message: "User is unbanned successfully",
-            payload: {
-                updatedUser,
+                User,
             }
         })
     }
@@ -397,7 +334,5 @@ module.exports = {
     processRegister,
     activateUserAccount,
     updateUserById,
-    handleBanUserById,
-    handleUnBanUserById,
-
+    handleManageBannedUserById,
 };
