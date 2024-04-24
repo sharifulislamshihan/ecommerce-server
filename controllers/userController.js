@@ -66,7 +66,7 @@ const getUsers = async (req, res, next) => {
 
 // get a single user
 const getUserById = async (req, res, next) => {
-    
+
     try {
         // console.log(req.user);
         const id = req.params.id;
@@ -142,7 +142,7 @@ const processRegister = async (req, res, next) => {
 
         // jwt
         const token = createJsonWebToken(
-            { name, email, password, image, phone, address }, jwtActivationKey, 
+            { name, email, password, image, phone, address }, jwtActivationKey,
             '10m')
 
         //console.log(token);
@@ -241,7 +241,7 @@ const activateUserAccount = async (req, res, next) => {
 const updateUserById = async (req, res, next) => {
     try {
         const userId = req.params.id;
-        const options = {password: 0};
+        const options = { password: 0 };
 
         // find user
         const user = await findWithId(User, userId, options)
@@ -279,12 +279,12 @@ const updateUserById = async (req, res, next) => {
         }
 
         const updatedUser = await User.findByIdAndUpdate(
-            userId, 
-            updates, 
+            userId,
+            updates,
             updateOptions
         )
-        //remove password from response
-        .select("-password");
+            //remove password from response
+            .select("-password");
 
         if (!updatedUser) {
             throw createError(404, 'User does not exist')
@@ -304,6 +304,92 @@ const updateUserById = async (req, res, next) => {
 }
 
 
+// handle ban a single user
+const handleBanUserById = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        // find user
+        await findWithId(User, userId)
+
+        // to banned a user by a admin
+        const updatesBannedInformation = { isBanned : true };
+
+        const updateOptions = {
+            // updated data should be original data
+            new: true,
+            // it helps to validate data according to schema
+            runValidators: true,
+            context: 'query',
+        }
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updatesBannedInformation,
+            updateOptions
+        )
+            //remove password from response
+            .select("-password");
+
+        if (!updatedUser) {
+            throw createError(404, 'User was not banned successfully')
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "User is banned successfully",
+            payload: {
+                updatedUser,
+            }
+        })
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+
+
+// handle unBan a single user
+const handleUnBanUserById = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        // find user
+        await findWithId(User, userId)
+
+        // to banned a user by a admin
+        const updatesBannedInformation = { isBanned : false };
+
+        const updateOptions = {
+            // updated data should be original data
+            new: true,
+            // it helps to validate data according to schema
+            runValidators: true,
+            context: 'query',
+        }
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updatesBannedInformation,
+            updateOptions
+        )
+            //remove password from response
+            .select("-password");
+
+        if (!updatedUser) {
+            throw createError(404, 'User was not UnBanned successfully')
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "User is unbanned successfully",
+            payload: {
+                updatedUser,
+            }
+        })
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     getUsers,
     getUserById,
@@ -311,5 +397,7 @@ module.exports = {
     processRegister,
     activateUserAccount,
     updateUserById,
+    handleBanUserById,
+    handleUnBanUserById,
 
 };

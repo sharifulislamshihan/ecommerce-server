@@ -1,5 +1,5 @@
 const express = require('express');
-const { getUsers, getUserById, deleteUserById, processRegister, activateUserAccount, updateUserById } = require('../controllers/userController');
+const { getUsers, getUserById, deleteUserById, processRegister, activateUserAccount, updateUserById, handleBanUserById, handleUnBanUserById } = require('../controllers/userController');
 const upload = require('../middlewares/uploadFiles');
 const { validateUserRegistration } = require('../validators/auth');
 const { runValidation } = require('../validators/runValidation');
@@ -23,5 +23,9 @@ userRouter.delete('/:id', isLoggedIn, isAdmin, deleteUserById);
 
 // update user by id router
 userRouter.put('/:id', isLoggedIn, updateUserById);
+
+userRouter.put('/ban-user/:id', isLoggedIn, isAdmin, handleBanUserById);
+
+userRouter.put('/unBan-user/:id', isLoggedIn, isAdmin, handleUnBanUserById);
 
 module.exports = userRouter;
