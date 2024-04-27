@@ -1,5 +1,99 @@
-const createHttpError = require("http-errors");
+const createError = require('http-errors');
 const User = require("../models/userModel");
+const { successResponse } = require('../controllers/responseController');
+const { findWithId } = require('./findWithId');
+
+
+const findUser = async (search, limit, page) => {
+    try {
+        const searchRegEx = new RegExp('.*' + search + '.*', 'i');
+
+        // filter to see only users not admin
+        const filter = {
+            isAdmin: { $ne: true },
+            //  name,email or phone should match the search string
+            $or: [
+                { name: { $regex: searchRegEx } },
+                { email: { $regex: searchRegEx } },
+                { phone: { $regex: searchRegEx } },
+            ]
+        }
+        const options = {
+            // skip the password field  from results
+            password: 0
+        }
+        // pagination
+        const users = await User.find(filter, options)
+            .limit(limit)
+            .skip((page - 1) * limit)
+
+        const count = await User.find(filter).countDocuments();
+
+        if (!users || users.length === 0) throw createError(404, "No Users Found");
+
+
+        return {
+            users,
+            pagination: {
+                totalPages: Math.ceil(count / limit),
+                currentPage: page,
+                previousPage: page - 1 > 0 ? page - 1 : null,
+                nextPage: page + 1 <= Math.ceil(count / limit) ? page + 1 : null,
+            }
+        }
+
+        // return successResponse(res, {
+        //     statusCode: 200,
+        //     message: "Users Returned Successfully",
+        //     payload: {
+        //         users,
+        //         pagination: {
+        //             totalPages: Math.ceil(count / limit),
+        //             currentPage: page,
+        //             previousPage: page - 1 > 0 ? page - 1 : null,
+        //             nextPage: page + 1 <= Math.ceil(count / limit) ? page + 1 : null,
+        //         }
+        //     }
+        // })
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
+
+const findUserById = async (id, options = {}) => {
+    try {
+        const user = await User.findById(id, options).select('-password')
+
+        if (!user) {
+            throw createError(404, 'User not found!')
+        }
+        return user;
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
+
+const deleteUserById = async (id, options = {}) => {
+    try {
+        const user = await User.findByIdAndDelete({
+            _id: id,
+            isAdmin: false,
+        })
+        if (!user) {
+            throw createError(404, 'User not found!')
+        }
+    }
+    catch (error) {
+        throw error;
+    }
+}
+
+
+
 
 const handleUserAction = async (userId, action) => {
     try {
@@ -14,7 +108,7 @@ const handleUserAction = async (userId, action) => {
             successMessage = "User is Unbanned Successfully"
         }
         else {
-            throw createHttpError(400, 'Invalid action. Use ban or Unban')
+            throw createError(400, 'Invalid action. Use ban or Unban')
         }
 
         const updateOptions = {
@@ -33,7 +127,7 @@ const handleUserAction = async (userId, action) => {
             .select("-password");
 
         if (!updatedUser) {
-            throw createHttpError(404, 'User was not banned successfully')
+            throw createError(404, 'User was not banned successfully')
         }
         return successMessage;
     }
@@ -45,4 +139,7 @@ const handleUserAction = async (userId, action) => {
 
 module.exports = {
     handleUserAction,
+    findUser,
+    findUserById,
+    deleteUserById,
 }

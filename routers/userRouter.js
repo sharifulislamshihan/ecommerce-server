@@ -1,5 +1,5 @@
 const express = require('express');
-const { getUsers, getUserById, deleteUserById, processRegister, activateUserAccount, updateUserById, handleManageBannedUserById } = require('../controllers/userController');
+const { getUsers, getUserById, handleDeleteUserById, processRegister, activateUserAccount, handleUpdateUserById, handleManageBannedUserById } = require('../controllers/userController');
 const upload = require('../middlewares/uploadFiles');
 const { validateUserRegistration } = require('../validators/auth');
 const { runValidation } = require('../validators/runValidation');
@@ -19,10 +19,10 @@ userRouter.get('/', isLoggedIn, isAdmin, getUsers);
 userRouter.get('/:id', isLoggedIn, getUserById);
 
 // delete user by id router
-userRouter.delete('/:id', isLoggedIn, isAdmin, deleteUserById);
+userRouter.delete('/:id', isLoggedIn, isAdmin, handleDeleteUserById);
 
 // update user by id router
-userRouter.put('/:id', isLoggedIn, updateUserById);
+userRouter.put('/:id', isLoggedIn, handleUpdateUserById);
 
 // handle ban and unban user by id
 userRouter.put('/manageUser/:id', isLoggedIn, isAdmin, handleManageBannedUserById);

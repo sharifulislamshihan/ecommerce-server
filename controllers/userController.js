@@ -7,7 +7,7 @@ const { findWithId } = require('../Services/findWithId');
 const { createJsonWebToken } = require('../helper/jsonwebtoken');
 const { jwtActivationKey, clientUrl } = require('../secret');
 const { sendEmailWithNodeMailer } = require('../helper/email');
-const { handleUserAction } = require('../Services/userService');
+const { handleUserAction, findUser, findUserById, deleteUserById,  } = require('../Services/userService');
 // const { default: mongoose } = require('mongoose');
 
 
@@ -19,43 +19,14 @@ const getUsers = async (req, res, next) => {
         const search = req.query.search || "";
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 10;
-
-        const searchRegEx = new RegExp('.*' + search + '.*', 'i');
-
-        // filter to see only users not admin
-        const filter = {
-            isAdmin: { $ne: true },
-            //  name,email or phone should match the search string
-            $or: [
-                { name: { $regex: searchRegEx } },
-                { email: { $regex: searchRegEx } },
-                { phone: { $regex: searchRegEx } },
-            ]
-        }
-        const options = {
-            // skip the password field  from results
-            password: 0
-        }
-        // pagination
-        const users = await User.find(filter, options)
-            .limit(limit)
-            .skip((page - 1) * limit)
-
-        const count = await User.find(filter).countDocuments();
-
-        if (!users) throw createError(404, "No Users Found");
+        const { users, pagination } = await findUser(search, limit, page);
 
         return successResponse(res, {
             statusCode: 200,
             message: "Users Returned Successfully",
             payload: {
                 users,
-                pagination: {
-                    totalPages: Math.ceil(count / limit),
-                    currentPage: page,
-                    previousPage: page - 1 > 0 ? page - 1 : null,
-                    nextPage: page + 1 <= Math.ceil(count / limit) ? page + 1 : null,
-                }
+                pagination: pagination,
             }
         })
     }
@@ -74,7 +45,7 @@ const getUserById = async (req, res, next) => {
         const options = {
             password: 0,
         }
-        const user = await findWithId(User, id, options);
+        const user = await findUserById(id, options);
 
         return successResponse(res, {
             statusCode: 200,
@@ -90,14 +61,13 @@ const getUserById = async (req, res, next) => {
 }
 
 // delete a single user
-const deleteUserById = async (req, res, next) => {
+const handleDeleteUserById = async (req, res, next) => {
     try {
         const id = req.params.id;
         const options = {
             password: 0,
         }
-
-        const user = await findWithId(User, id, options);
+        await deleteUserById(id, options);
 
         // const userImagePath = user.image;
         // fs.access(userImagePath, (err) =>{
@@ -111,12 +81,6 @@ const deleteUserById = async (req, res, next) => {
         //         });
         //     };
         // })
-
-        const deletedUser = await User.findByIdAndDelete({
-            _id: id,
-            isAdmin: false,
-        });
-
         return successResponse(res, {
             statusCode: 200,
             message: "User Deleted Successfully",
@@ -239,7 +203,7 @@ const activateUserAccount = async (req, res, next) => {
 
 
 // Update a single user
-const updateUserById = async (req, res, next) => {
+const handleUpdateUserById = async (req, res, next) => {
     try {
         const userId = req.params.id;
         const options = { password: 0 };
@@ -330,9 +294,9 @@ const handleManageBannedUserById = async (req, res, next) => {
 module.exports = {
     getUsers,
     getUserById,
-    deleteUserById,
+    handleDeleteUserById,
     processRegister,
     activateUserAccount,
-    updateUserById,
+    handleUpdateUserById,
     handleManageBannedUserById,
 };
