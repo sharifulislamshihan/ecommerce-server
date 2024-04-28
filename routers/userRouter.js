@@ -1,7 +1,7 @@
 const express = require('express');
-const { getUsers, getUserById, handleDeleteUserById, processRegister, activateUserAccount, handleUpdateUserById, handleManageBannedUserById } = require('../controllers/userController');
+const { getUsers, getUserById, handleDeleteUserById, processRegister, activateUserAccount, handleUpdateUserById, handleManageBannedUserById, handleUpdatePassword } = require('../controllers/userController');
 const upload = require('../middlewares/uploadFiles');
-const { validateUserRegistration } = require('../validators/auth');
+const { validateUserRegistration, validateUserPasswordUpdate } = require('../validators/auth');
 const { runValidation } = require('../validators/runValidation');
 const { isLoggedIn, isLoggedOut, isAdmin } = require('../middlewares/auth');
 const userRouter = express.Router();
@@ -27,5 +27,8 @@ userRouter.put('/:id', isLoggedIn, handleUpdateUserById);
 // handle ban and unban user by id
 userRouter.put('/manageUser/:id', isLoggedIn, isAdmin, handleManageBannedUserById);
 
+
+// Update Password
+userRouter.put('/update-password/:id', validateUserPasswordUpdate, runValidation, isLoggedIn, handleUpdatePassword);
 
 module.exports = userRouter;

@@ -1,16 +1,16 @@
 const createError = require('http-errors');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
 const User = require('../models/userModel');
 const { successResponse } = require('./responseController');
 const { findWithId } = require('../Services/findWithId');
 const { createJsonWebToken } = require('../helper/jsonwebtoken');
 const { jwtActivationKey, clientUrl } = require('../secret');
 const { sendEmailWithNodeMailer } = require('../helper/email');
-const { handleUserAction, findUser, findUserById, deleteUserById,  } = require('../Services/userService');
-// const { default: mongoose } = require('mongoose');
-
-
+const { handleUserAction, findUser, findUserById, deleteUserById, } = require('../Services/userService');
 
 
 // get all the user
@@ -264,6 +264,55 @@ const handleUpdateUserById = async (req, res, next) => {
         })
     }
     catch (error) {
+        // to handle mongoose cast error if any id is not valid
+        if (error instanceof mongoose.Error.CastError) {
+            throw createError(400, "Invalid ID")
+        }
+        next(error);
+    }
+}
+
+
+// Update a single user
+const handleUpdatePassword = async (req, res, next) => {
+    try {
+
+        const {oldPassword, newPassword, confirmPassword} = req.body;
+        const userId = req.params.id;
+        const user = await findWithId(User, userId);
+        //console.log(user);
+
+        // Match the password and compare
+        const isPasswordMatch = await bcrypt.compare(oldPassword, user.password)
+
+        if (!isPasswordMatch) {
+            throw createError(401, 'Password is not correct. Try again!!')
+        }
+
+        const updateUser = await User.findByIdAndUpdate(
+            userId,
+            // replace pass with new pass
+            {$set: {password: newPassword}},
+            {new: true}
+        ).select('-password')
+
+        if(!updateUser){
+            throw createError(400, 'Unfortunately, there was an error updating your password. Please try again')
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Password Updated Successfully",
+            payload: {
+                updateUser,
+            }
+        })
+    }
+    catch (error) {
+        // to handle mongoose cast error if any id is not valid
+        if (error instanceof mongoose.Error.CastError) {
+            throw createError(400, "Invalid ID")
+        }
         next(error);
     }
 }
@@ -299,4 +348,5 @@ module.exports = {
     activateUserAccount,
     handleUpdateUserById,
     handleManageBannedUserById,
+    handleUpdatePassword,
 };
