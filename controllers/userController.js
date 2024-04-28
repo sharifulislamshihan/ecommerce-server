@@ -10,7 +10,7 @@ const { findWithId } = require('../Services/findWithId');
 const { createJsonWebToken } = require('../helper/jsonwebtoken');
 const { jwtActivationKey, clientUrl } = require('../secret');
 const { sendEmailWithNodeMailer } = require('../helper/email');
-const { handleUserAction, findUser, findUserById, deleteUserById, } = require('../Services/userService');
+const { handleUserAction, findUser, findUserById, deleteUserById, updateUserPasswordById, } = require('../Services/userService');
 
 
 // get all the user
@@ -277,28 +277,11 @@ const handleUpdateUserById = async (req, res, next) => {
 const handleUpdatePassword = async (req, res, next) => {
     try {
 
-        const {oldPassword, newPassword, confirmPassword} = req.body;
+        // email, oldPassword, newPassword, confirmPassword will be received from req.body
+        const {email, oldPassword, newPassword, confirmPassword} = req.body;
         const userId = req.params.id;
-        const user = await findWithId(User, userId);
-        //console.log(user);
 
-        // Match the password and compare
-        const isPasswordMatch = await bcrypt.compare(oldPassword, user.password)
-
-        if (!isPasswordMatch) {
-            throw createError(401, 'Password is not correct. Try again!!')
-        }
-
-        const updateUser = await User.findByIdAndUpdate(
-            userId,
-            // replace pass with new pass
-            {$set: {password: newPassword}},
-            {new: true}
-        ).select('-password')
-
-        if(!updateUser){
-            throw createError(400, 'Unfortunately, there was an error updating your password. Please try again')
-        }
+        const updateUser = await updateUserPasswordById(userId, email, oldPassword, newPassword, confirmPassword, )
 
         return successResponse(res, {
             statusCode: 200,
