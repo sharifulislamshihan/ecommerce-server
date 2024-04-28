@@ -1,7 +1,7 @@
 const express = require('express');
-const { getUsers, getUserById, handleDeleteUserById, processRegister, activateUserAccount, handleUpdateUserById, handleManageBannedUserById, handleUpdatePassword } = require('../controllers/userController');
+const { getUsers, getUserById, handleDeleteUserById, processRegister, activateUserAccount, handleUpdateUserById, handleManageBannedUserById, handleUpdatePassword, handleForgetPassword, handleResetPassword } = require('../controllers/userController');
 const upload = require('../middlewares/uploadFiles');
-const { validateUserRegistration, validateUserPasswordUpdate } = require('../validators/auth');
+const { validateUserRegistration, validateUserPasswordUpdate, validateUserForgetPassword, validateUserResetPassword } = require('../validators/auth');
 const { runValidation } = require('../validators/runValidation');
 const { isLoggedIn, isLoggedOut, isAdmin } = require('../middlewares/auth');
 const userRouter = express.Router();
@@ -21,6 +21,9 @@ userRouter.get('/:id', isLoggedIn, getUserById);
 // delete user by id router
 userRouter.delete('/:id', isLoggedIn, isAdmin, handleDeleteUserById);
 
+// Reset Password
+userRouter.put('/reset-password', validateUserResetPassword, runValidation, handleResetPassword);
+
 // update user by id router
 userRouter.put('/:id', isLoggedIn, handleUpdateUserById);
 
@@ -30,5 +33,11 @@ userRouter.put('/manageUser/:id', isLoggedIn, isAdmin, handleManageBannedUserByI
 
 // Update Password
 userRouter.put('/update-password/:id', validateUserPasswordUpdate, runValidation, isLoggedIn, handleUpdatePassword);
+
+
+// Forget Password
+userRouter.post('/forget-password', validateUserForgetPassword, runValidation, handleForgetPassword);
+
+
 
 module.exports = userRouter;

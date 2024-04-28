@@ -8,9 +8,11 @@ const User = require('../models/userModel');
 const { successResponse } = require('./responseController');
 const { findWithId } = require('../Services/findWithId');
 const { createJsonWebToken } = require('../helper/jsonwebtoken');
-const { jwtActivationKey, clientUrl } = require('../secret');
+const { jwtActivationKey, clientUrl, jwtResetPasswordKey } = require('../secret');
 const { sendEmailWithNodeMailer } = require('../helper/email');
 const { handleUserAction, findUser, findUserById, deleteUserById, updateUserPasswordById, } = require('../Services/userService');
+const createHttpError = require('http-errors');
+const { error } = require('console');
 
 
 // get all the user
@@ -278,10 +280,10 @@ const handleUpdatePassword = async (req, res, next) => {
     try {
 
         // email, oldPassword, newPassword, confirmPassword will be received from req.body
-        const {email, oldPassword, newPassword, confirmPassword} = req.body;
+        const { email, oldPassword, newPassword, confirmPassword } = req.body;
         const userId = req.params.id;
 
-        const updateUser = await updateUserPasswordById(userId, email, oldPassword, newPassword, confirmPassword, )
+        const updateUser = await updateUserPasswordById(userId, email, oldPassword, newPassword, confirmPassword,)
 
         return successResponse(res, {
             statusCode: 200,
@@ -296,6 +298,94 @@ const handleUpdatePassword = async (req, res, next) => {
         if (error instanceof mongoose.Error.CastError) {
             throw createError(400, "Invalid ID")
         }
+        next(error);
+    }
+}
+
+// forget Password 
+const handleForgetPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email: email });
+        if (!user) {
+            throw createError(404, "User Not Found");
+        }
+        // jwt
+        const token = createJsonWebToken(
+            { email }, jwtResetPasswordKey,
+            '10m');
+
+        // Prepare Email
+        const emailData = {
+            email,
+            subject: 'Reset Password Mail',
+            html: `
+                    <h2>Hello ${user.name}</h2>
+                    <p>Please click on the following link to verify your account reset password</p>
+                    <a href="${clientUrl}/api/users/reset-password/${token}" target="_blank">RESET PASSWORD</a>
+                    `
+        }
+        //  Send Email with Nodemailer
+        try {
+
+            await sendEmailWithNodeMailer(emailData)
+        } catch (error) {
+            next(createError(500, "Failed to send reset password mail"));
+
+            return;
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: `Please go to your ${email} for reseting your password`,
+            payload: {
+                token
+            }
+        })
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+// forget Password 
+const handleResetPassword = async (req, res, next) => {
+    // todo:
+    //     ----Fetch the token and password from request body
+    //      ----Verify the token
+    //      ----If the decoded is empty send error message
+    //      ---- find and update the pass
+    //      ----- id update unsuccessful send error message
+    //      ---- if successful send success message
+    try {
+        const {token, password} = req.body;
+        const userId = req.params.id;
+        const decoded = jwt.verify(token, jwtResetPasswordKey);
+        if (!decoded){
+            throw createError(400, 'Invalid/expire token')
+        }
+        
+        // fetching email from decoded and will use it
+        const filter =  {email: decoded.email};
+        
+        const updatedUser = await User.findOneAndUpdate(
+            filter,
+            { password: password },
+            { new: true }
+        ).select('-password')
+
+        if(!updatedUser) {
+            throw createError(400, 'Password Reset Failed')
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Password Reset Successfully',
+            payload: {
+            }
+        })
+    }
+    catch (error) {
         next(error);
     }
 }
@@ -332,4 +422,6 @@ module.exports = {
     handleUpdateUserById,
     handleManageBannedUserById,
     handleUpdatePassword,
+    handleForgetPassword,
+    handleResetPassword,
 };

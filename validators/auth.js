@@ -101,14 +101,50 @@ const validateUserPasswordUpdate = [
         .withMessage('Password should contain at least 6 character, one Uppercase letter, one lowercase letter, one number and one special character'),
 
 
-    body('confirmPassword').custom((value, {req}) => {
+    body('confirmPassword').custom((value, { req }) => {
         if (value !== req.body.newPassword) {
             throw new Error('Password does not match')
         }
         return true;
     })
 
-    
+
+]
+
+
+const validateUserForgetPassword = [
+
+    // ----------email validation---------
+    body('email')
+        .trim()
+        .notEmpty()
+        .withMessage('Email is required. Enter Your Email')
+        .isEmail()
+        .withMessage('Invalid Email Address'),
+
+]
+
+const validateUserResetPassword = [
+
+    // ----------token validation---------
+    body('token')
+        .trim()
+        .notEmpty()
+        .withMessage('Token is missing.'),
+
+          // ----------password validation---------
+    body('password')
+        .trim()
+        .notEmpty()
+        .withMessage('Password is required.')
+        .isLength({ min: 6 })
+        .matches(
+            /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/
+        )
+        .withMessage('Password should contain at least 8 character, one Uppercase letter, one lowercase letter, one number and one special character'),
+
+
+
 ]
 
 
@@ -117,4 +153,6 @@ module.exports = {
     validateUserRegistration,
     validateUserLogin,
     validateUserPasswordUpdate,
+    validateUserForgetPassword,
+    validateUserResetPassword,
 };
