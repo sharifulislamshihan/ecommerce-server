@@ -147,8 +147,6 @@ const validateUserResetPassword = [
 
 ]
 
-
-
 module.exports = {
     validateUserRegistration,
     validateUserLogin,
