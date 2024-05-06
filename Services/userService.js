@@ -68,7 +68,7 @@ const findUserById = async (id, options = {}) => {
     try {
         const user = await User.findById(id, options).select('-password')
 
-        if (!user) {
+        if (!user || user.length === 0) {
             throw createError(404, 'User not found!')
         }
         return user;

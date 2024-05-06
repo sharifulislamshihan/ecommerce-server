@@ -57,8 +57,10 @@ const handleLogin = async (req, res, next) => {
             secure: true
         }
 
-
-        const userWithOutPassword = await User.findOne({ email }).select('-password');
+        // take as a object
+        const userWithOutPassword = user.toObject();
+        // delete the password field of the object
+        delete userWithOutPassword.password;
         // success response
         return successResponse(res, {
             statusCode: 200,
@@ -77,6 +79,7 @@ const handleLogin = async (req, res, next) => {
 const handleLogout = async (req, res, next) => {
     try {
         res.clearCookie('accessToken')
+        res.clearCookie('refreshToken')
         // success response
         return successResponse(res, {
             statusCode: 200,

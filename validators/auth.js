@@ -1,4 +1,6 @@
 const { body } = require("express-validator");
+
+
 // validation while registration
 //=============================
 const validateUserRegistration = [
@@ -132,7 +134,7 @@ const validateUserResetPassword = [
         .notEmpty()
         .withMessage('Token is missing.'),
 
-          // ----------password validation---------
+    // ----------password validation---------
     body('password')
         .trim()
         .notEmpty()

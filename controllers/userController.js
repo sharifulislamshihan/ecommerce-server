@@ -93,7 +93,7 @@ const handleDeleteUserById = async (req, res, next) => {
     }
 }
 
-// process  registration request
+// process  registration request create account
 const processRegister = async (req, res, next) => {
     try {
         const { name, email, password, image, phone, address } = req.body;

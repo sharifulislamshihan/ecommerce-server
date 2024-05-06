@@ -16,23 +16,23 @@ userRouter.post('/verify', isLoggedOut, activateUserAccount);
 userRouter.get('/', isLoggedIn, isAdmin, getUsers);
 
 // route parameter :id is accessed at req.params.id
-userRouter.get('/:id', isLoggedIn, getUserById);
+userRouter.get('/:id([0-9a-fA-f]{24})', isLoggedIn, getUserById);
 
 // delete user by id router
-userRouter.delete('/:id', isLoggedIn, isAdmin, handleDeleteUserById);
+userRouter.delete('/:id([0-9a-fA-f]{24})', isLoggedIn, isAdmin, handleDeleteUserById);
 
 // Reset Password
 userRouter.put('/reset-password', validateUserResetPassword, runValidation, handleResetPassword);
 
 // update user by id router
-userRouter.put('/:id', isLoggedIn, handleUpdateUserById);
+userRouter.put('/:id([0-9a-fA-f]{24})', isLoggedIn, handleUpdateUserById);
 
 // handle ban and unban user by id
-userRouter.put('/manageUser/:id', isLoggedIn, isAdmin, handleManageBannedUserById);
+userRouter.put('/manageUser/:id([0-9a-fA-f]{24})', isLoggedIn, isAdmin, handleManageBannedUserById);
 
 
 // Update Password
-userRouter.put('/update-password/:id', validateUserPasswordUpdate, runValidation, isLoggedIn, handleUpdatePassword);
+userRouter.put('/update-password/:id([0-9a-fA-f]{24})', validateUserPasswordUpdate, runValidation, isLoggedIn, handleUpdatePassword);
 
 
 // Forget Password
