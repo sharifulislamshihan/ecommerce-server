@@ -2,7 +2,7 @@ const slugify = require('slugify')
 const Category = require("../models/categoryModel");
 
 
-const CreateCategory = async (name) => {
+const createCategory = async (name) => {
 
     const newCategory = await Category.create({
         name,
@@ -10,6 +10,22 @@ const CreateCategory = async (name) => {
     });
     return newCategory;
 }
+
+
+const getAllCategory = async () => {
+    // return all the category
+    return await Category.find({}).select('name slug').lean()
+}
+
+// get a single category
+const getACategory = async (slug) => {
+    // return all the category
+    return await Category.find({slug}).select('name slug').lean()
+}
+
 module.exports = {
-    CreateCategory
+    createCategory,
+    getAllCategory,
+    getACategory,
+    
 }
