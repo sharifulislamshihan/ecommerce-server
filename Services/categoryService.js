@@ -1,3 +1,4 @@
+
 const slugify = require('slugify')
 const Category = require("../models/categoryModel");
 
@@ -18,14 +19,25 @@ const getAllCategory = async () => {
 }
 
 // get a single category
-const getACategory = async (slug) => {
+const getSingleCategory = async (slug) => {
     // return all the category
-    return await Category.find({slug}).select('name slug').lean()
+    return await Category.find({ slug }).select('name slug').lean()
 }
+
+// update a product
+const updateCategory = async (name, slug) => {
+    const updatedCategory = await Category.findOneAndUpdate(
+        { slug },
+        { $set: { name:name, slug: slugify(name) } },
+        { new: true }
+    );
+    return updatedCategory;
+}
+
 
 module.exports = {
     createCategory,
     getAllCategory,
-    getACategory,
-    
+    getSingleCategory,
+    updateCategory,
 }

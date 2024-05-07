@@ -1,21 +1,26 @@
 const express = require('express');
 const { runValidation } = require('../validators/runValidation');
 const { isLoggedIn, isLoggedOut, isAdmin } = require('../middlewares/auth');
-const { handleCreateCategory, handleGetAllCategories, handleGetSingleCategory } = require('../controllers/categoryController');
+const { handleCreateCategory, handleGetAllCategories, handleGetSingleCategory, handleUpdateCategory } = require('../controllers/categoryController');
 const { validateCategory } = require('../validators/category');
 const categoryRouter = express.Router();
 
+
+// GET: /api/categories
+// get all the category
+categoryRouter.get('/', isLoggedIn, handleGetAllCategories);
 
 // POST: /api/categories
 // create category
 categoryRouter.post('/createCategory', validateCategory, runValidation, isLoggedIn, isAdmin, handleCreateCategory);
 
-
-// GET: /api/categories
-// get all the category
-categoryRouter.get('/', isLoggedIn, isAdmin, handleGetAllCategories);
 // get single category
-categoryRouter.get('/:slug', isLoggedIn, isAdmin, handleGetSingleCategory);
+categoryRouter.get('/:slug', isLoggedIn, handleGetSingleCategory);
+
+// update route
+categoryRouter.put('/update-category/:slug', validateCategory, runValidation, isLoggedIn, isAdmin, handleUpdateCategory);
+
+
 
 
 module.exports = categoryRouter;

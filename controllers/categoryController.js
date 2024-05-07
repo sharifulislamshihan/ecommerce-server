@@ -1,4 +1,4 @@
-const { createCategory, getAllCategory, getACategory } = require("../Services/categoryService");
+const { createCategory, getAllCategory, getSingleCategory, updateCategory } = require("../Services/categoryService");
 const { successResponse } = require("./responseController");
 const createError = require('http-errors');
 
@@ -39,12 +39,37 @@ const handleGetAllCategories = async (req, res, next) => {
 const handleGetSingleCategory = async (req, res, next) => {
     try {
 
-        const {slug} = req.params
-        const categories = await getACategory(slug)
+        const { slug } = req.params
+        const category = await getSingleCategory(slug);
+        if (!category) {
+            throw createError(404, 'Category update failed!')
+        }
         return successResponse(res, {
             statusCode: 200,
             message: 'All the categories returned successfully',
-            payload: categories,
+            payload: category,
+        })
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
+// update a category
+const handleUpdateCategory = async (req, res, next) => {
+    try {
+        const { name } = req.body;
+        const { slug } = req.params;
+        //console.log(name, slug);
+        const updatedCategory = await updateCategory(name, slug)
+        //console.log(updateCategory);
+        if (!updatedCategory) {
+            throw createError(404, 'Category update failed!')
+        }
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Category updated Successfully',
+            payload:  updatedCategory ,
         })
     }
     catch (error) {
@@ -56,5 +81,6 @@ const handleGetSingleCategory = async (req, res, next) => {
 module.exports = {
     handleCreateCategory,
     handleGetAllCategories,
-    handleGetSingleCategory
+    handleGetSingleCategory,
+    handleUpdateCategory,
 }
