@@ -1,4 +1,4 @@
-const { createCategory, getAllCategory, getSingleCategory, updateCategory } = require("../Services/categoryService");
+const { createCategory, getAllCategory, getSingleCategory, updateCategory, deleteCategory } = require("../Services/categoryService");
 const { successResponse } = require("./responseController");
 const createError = require('http-errors');
 
@@ -69,7 +69,7 @@ const handleUpdateCategory = async (req, res, next) => {
         return successResponse(res, {
             statusCode: 200,
             message: 'Category updated Successfully',
-            payload:  updatedCategory ,
+            payload: updatedCategory,
         })
     }
     catch (error) {
@@ -78,9 +78,29 @@ const handleUpdateCategory = async (req, res, next) => {
 }
 
 
+// delete a category
+const handleDeleteCategory = async (req, res, next) => {
+    try {
+        const { slug } = req.params;
+        const deleteSingleCategory = await deleteCategory(slug);
+        if (!deleteSingleCategory) {
+            throw createError(404, 'Category delete failed')
+        }
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Category deleted successfully',
+            payload: deleteSingleCategory,
+        })
+    }
+    catch (error) {
+        next(error);
+    }
+}
+
 module.exports = {
     handleCreateCategory,
     handleGetAllCategories,
     handleGetSingleCategory,
     handleUpdateCategory,
+    handleDeleteCategory
 }
