@@ -28,7 +28,7 @@ const productSchema = new Schema({
     },
 
     price: {
-        type: number,
+        type: Number,
         required: [true, 'Product price is required'],
         trim: true,
         validate: {
@@ -39,8 +39,15 @@ const productSchema = new Schema({
         }
     },
 
+    category: {
+        type: String,
+        required: [true, 'Product category is required'],
+        trim: true,
+        lowercase: true,
+    },
+
     quantity: {
-        type: number,
+        type: Number,
         required: [true, 'Product quantity is required'],
         trim: true,
         validate: {
@@ -52,23 +59,23 @@ const productSchema = new Schema({
     },
 
     sold: {
-        type: number,
+        type: Number,
         required: [true, 'sold quantity is required'],
         trim: true,
         default: 0,
     },
-    photo: {
+    image: {
         type: String,
         required: [true, 'Product photo is required'],
         trim: true,
     },
     shipping: {
-        type: number,
+        type: Number,
         default: 0, //if shipping is free it will be 0 otherwise it will add shipping cost
     },
 
 
-    category: {
+    categoryId: {
         type: Schema.Types.ObjectId,
         ref: 'category',
         required: true,
@@ -77,6 +84,6 @@ const productSchema = new Schema({
 }, { timestamps: true });
 
 
-const Product = model('Product', productSchema);
+const Products = model('Products', productSchema);
 
-module.exports = Product;
+module.exports = Products;
