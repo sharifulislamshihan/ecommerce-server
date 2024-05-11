@@ -83,7 +83,7 @@ const handleGetSingleProduct = async (req, res, next) => {
     try {
         const id = req.params.id;
 
-        const product =await Products.findById(id);
+        const product = await Products.findById(id);
         console.log(product);
         if (!product) {
             throw createError(404, 'Product not found')
@@ -124,9 +124,83 @@ const handleSingleDeleteProduct = async (req, res, next) => {
     }
 }
 
+
+// Update a product
+const handleUpdateProduct = async (req, res, next) => {
+    try {
+        const { slug } = req.params;
+        const updateOptions = {
+            // updated data should be original data
+            new: true,
+            // it helps to validate data according to schema
+            runValidators: true,
+            context: 'query',
+        }
+
+        let updates = {};
+        // name, price, quantity, shipping, image, category
+
+        // --------------Update product data-----------------
+        if (req.body.name) {
+            updates.name = req.body.name;
+        }
+        if (req.body.description) {
+            updates.description = req.body.description;
+        }
+        if (req.body.price) {
+            updates.price = req.body.price;
+        }
+
+        if (req.body.quantity) {
+            updates.quantity = req.body.quantity;
+        }
+        if (req.body.shipping) {
+            updates.shipping = req.body.shipping;
+        }
+        // todo : image will update according to imgbb link
+        if (req.body.image) {
+            updates.image = req.body.image;
+        }
+
+        if (req.body.category) {
+            updates.category = req.body.category;
+        }
+
+        if(updates.name) {
+            updates.slug = slugify(updates.name);
+        }
+
+        const updatedProduct = await Products.findOneAndUpdate(
+            {slug},
+            updates,
+            updateOptions,
+        )
+
+        if (!updatedProduct) {
+            throw createError(404, 'Product does not exist')
+        }
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: "Product Updated Successfully",
+            payload: {
+                updatedProduct,
+            }
+        })
+    }
+    catch (error) {
+        // to handle mongoose cast error if any id is not valid
+        // if (error instanceof mongoose.Error.CastError) {
+        //     throw createError(400, "Invalid ID")
+        // }
+        next(error);
+    }
+}
+
 module.exports = {
     handleCreateProduct,
     handleGetAllProducts,
     handleGetSingleProduct,
     handleSingleDeleteProduct,
+    handleUpdateProduct,
 };

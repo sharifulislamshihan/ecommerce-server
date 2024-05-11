@@ -1,6 +1,6 @@
 const express = require('express');
 const { isLoggedIn, isLoggedOut, isAdmin } = require('../middlewares/auth');
-const { handleCreateProduct, handleGetAllProducts, handleGetSingleProduct, handleSingleDeleteProduct } = require('../controllers/productController');
+const { handleCreateProduct, handleGetAllProducts, handleGetSingleProduct, handleSingleDeleteProduct, handleUpdateProduct } = require('../controllers/productController');
 const { validateProduct } = require('../validators/product');
 const { runValidation } = require('../validators/runValidation');
 const productRouter = express.Router();
@@ -17,6 +17,9 @@ productRouter.get('/:id', isLoggedIn, handleGetSingleProduct)
 
 // del product
 productRouter.delete('/:slug', isLoggedIn, isAdmin, handleSingleDeleteProduct);
+
+// updateProduct
+productRouter.put('/update/:slug', isLoggedIn, isAdmin, handleUpdateProduct);
 
 // todo: delete product need to be fixed
 
