@@ -26,4 +26,5 @@ categoryRouter.delete('/:slug', isLoggedIn, isAdmin, handleDeleteCategory);
 
 
 
+
 module.exports = categoryRouter;
